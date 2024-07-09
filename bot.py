@@ -14,8 +14,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # Set the OpenAI API key
 openai.api_key = OPENAI_API_KEY
 
+# Intents
 intents = discord.Intents.default()
 intents.messages = True
+intents.message_content = True  # Add this line to request message content intent
 
 bot = commands.Bot(command_prefix='/', intents=intents)
 
