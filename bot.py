@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 import os
 import json
 from dotenv import load_dotenv
@@ -22,6 +23,7 @@ intents.messages = True
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='/', intents=intents)
+tree = bot.tree
 
 # File paths
 MESSAGE_HISTORY_FILE = 'message_history.json'
@@ -57,7 +59,7 @@ personality = load_personality()
 
 @bot.event
 async def on_ready():
-    await bot.tree.sync()
+    await tree.sync()
     print(f'Bot is ready. Logged in as {bot.user}')
 
 @bot.event
@@ -83,7 +85,7 @@ async def on_message(message):
     
     await message.channel.send(response.choices[0].message.content)
 
-@bot.tree.command(name="chathist", description="Check previous messages")
+@tree.command(name="chathist", description="Check previous messages")
 async def chathist(interaction: discord.Interaction):
     if interaction.channel.id != ALLOWED_CHANNEL_ID:
         await interaction.response.send_message("You are not allowed to use this command in this channel.", ephemeral=True)
@@ -96,14 +98,15 @@ async def chathist(interaction: discord.Interaction):
     history_text = "\n".join([f"{author}: {content}" for author, content in message_history])
     await interaction.response.send_message(f"Message History:\n{history_text}")
 
-@bot.tree.command(name="wipehistory", description="Wipe the message history")
+@tree.command(name="wipehistory", description="Wipe the message history")
 async def wipehistory(interaction: discord.Interaction):
     global message_history
     message_history = []
     save_message_history()
     await interaction.response.send_message("Message history wiped.", ephemeral=True)
 
-@bot.tree.command(name="editpersonality", description="Edit the bot's personality")
+@tree.command(name="editpersonality", description="Edit the bot's personality")
+@app_commands.describe(new_personality="New personality for the bot")
 async def editpersonality(interaction: discord.Interaction, new_personality: str):
     global personality
     personality["system_message"] = new_personality
